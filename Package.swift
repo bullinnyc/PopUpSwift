@@ -5,11 +5,20 @@ import PackageDescription
 
 let package = Package(
     name: "PopUpSwift",
+    platforms: [
+        // Add support for all platforms starting from a specific version.
+        .iOS(.v14)
+    ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "PopUpSwift",
-            targets: ["PopUpSwift"]),
+            targets: ["PopUpSwift"]
+        ),
+        .library(
+            name: "ContentView",
+            targets: ["ContentView"]
+        )
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -20,9 +29,16 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "PopUpSwift",
-            dependencies: []),
+            dependencies: []
+        ),
+        .target(
+            name: "ContentView",
+            dependencies: ["PopUpSwift"],
+            path: "Examples"
+        ),
         .testTarget(
             name: "PopUpSwiftTests",
-            dependencies: ["PopUpSwift"]),
+            dependencies: ["PopUpSwift"]
+        ),
     ]
 )
