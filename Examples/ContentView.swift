@@ -64,7 +64,8 @@ struct ContentView: View {
                     // PopUp with specific style.
                     PopUpView(
                         anyView: AnyView(image),
-                        text: singleLineExampleText
+                        text: singleLineExampleText,
+                        isBounceAnimation: true
                     )
                     .popUpStyle(.newYorkPopUpStyle)
                     .padding(.trailing, 20)
@@ -79,7 +80,8 @@ struct ContentView: View {
                         shape: .circle,
                         shapeColor: .mint,
                         text: singleLineExampleText,
-                        popUpType: .bottom
+                        popUpType: .bottom,
+                        isBounceAnimation: true
                     ) {
                         print("Do something on tapped on the popup.")
                     }

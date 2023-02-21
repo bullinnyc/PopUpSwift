@@ -11,14 +11,17 @@ import SwiftUI
 /// Show a popup view.
 public struct PopUpView: View {
     // MARK: - Property Wrappers
-    @Environment(\.popUpStyle) private var popUpStyle
     @Environment(\.safeAreaInsets) private var safeAreaInsets
+    @Environment(\.popUpStyle) private var popUpStyle
     
     @State private var anyViewSize: CGSize = .zero
     @State private var anyViewGlobalCoordinate: CGPoint = .zero
     @State private var popUpSize: CGSize = .zero
     @State private var isShowPopUp = false
-    @State private var timer: Timer?
+    @State private var isBouncePopUp = false
+    @State private var popUpTimer: Timer?
+    @State private var bounceTimer: Timer?
+    @State private var orientation: UIDeviceOrientation = .unknown
     
     // MARK: - Private Properties
     private let anyView: AnyView
@@ -30,12 +33,14 @@ public struct PopUpView: View {
     private let maxWidth: CGFloat
     private let popUpType: PopUpType
     private let popUpOffsetY: CGFloat
+    private let isBounceAnimation: Bool
     private let zIndex: Double
     private let timeInterval: Double?
     private let completion: (() -> Void)?
     
     static private let popUpInsets = EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
     static private let strokeLineWidth: CGFloat = 0.9
+    static private let bounce: CGFloat = 3
     
     // MARK: - Public Enums
     public enum PopUpType {
@@ -116,7 +121,12 @@ public struct PopUpView: View {
                         .gesture(
                             DragGesture().onChanged { _ in
                                 if isPopUpNotInScreenFrame() {
-                                    startOrStopTimer()
+                                    startOrStopPopUpTimer()
+                                    
+                                    if isBounceAnimation {
+                                        isBouncePopUp = false
+                                        startBounceTimer()
+                                    }
                                 }
                             }
                         )
@@ -126,9 +136,18 @@ public struct PopUpView: View {
                         x: getRectangleCoordinateX(geometry),
                         y: getRectangleCoordinateY(geometry)
                     )
+                    .offset(y: isBouncePopUp ? getBounceOffset() : 0)
+                    .animation(
+                        isBouncePopUp
+                        ? .linear(duration: 0.4)
+                            .repeatForever(autoreverses: true)
+                        : .easeInOut,
+                        value: isBouncePopUp
+                    )
                     .onTapGesture {
                         isShowPopUp.toggle()
-                        startOrStopTimer()
+                        startOrStopPopUpTimer()
+                        stopBounceTimerIfNeeded()
                         completion?()
                     }
                 }
@@ -149,7 +168,8 @@ public struct PopUpView: View {
                     .onTapGesture {
                         if isEnoughSpaceToPopup() {
                             isShowPopUp.toggle()
-                            startOrStopTimer()
+                            startOrStopPopUpTimer()
+                            stopBounceTimerIfNeeded()
                         } else {
                             print("**** \(PopUpView.self) error: \(PopUpError.noSpace.rawValue) \(popUpType).")
                         }
@@ -162,6 +182,18 @@ public struct PopUpView: View {
         }
         .frame(width: anyViewSize.width, height: anyViewSize.height)
         .zIndex(zIndex)
+        .onChange(of: isShowPopUp) { newValue in
+            guard isBounceAnimation else { return }
+            
+            DispatchQueue.main.async {
+                isBouncePopUp = newValue
+            }
+        }
+        .onRotate { newOrientation in
+            // Required for floating animation to work
+            // when rotated on iOS 15.0 and above.
+            orientation = newOrientation
+        }
     }
     
     // MARK: - Initializers
@@ -175,6 +207,7 @@ public struct PopUpView: View {
     ///   - maxWidth: Maximum width that the popup can take.
     ///   - popUpType: Popup opening type.
     ///   - popUpOffsetY: Popup offset y position.
+    ///   - isBounceAnimation: Set to `true` for bouncing animation of the popup.
     ///   - zIndex: Controls the display order of overlapping views.
     ///   - timeInterval: Time interval for the popup to be visible.
     public init(
@@ -187,6 +220,7 @@ public struct PopUpView: View {
         maxWidth: CGFloat = 240,
         popUpType: PopUpType = .top,
         popUpOffsetY: CGFloat = 6,
+        isBounceAnimation: Bool = false,
         zIndex: Double = .zero,
         timeInterval: Double? = nil,
         completion: (() -> Void)? = nil
@@ -200,6 +234,7 @@ public struct PopUpView: View {
         self.maxWidth = maxWidth
         self.popUpType = popUpType
         self.popUpOffsetY = popUpOffsetY
+        self.isBounceAnimation = isBounceAnimation
         self.zIndex = zIndex
         self.timeInterval = timeInterval
         self.completion = completion
@@ -217,6 +252,7 @@ public struct PopUpView: View {
     ///   - maxWidth: Maximum width that the popup can take.
     ///   - popUpType: Popup opening type.
     ///   - popUpOffsetY: Popup offset y position.
+    ///   - isBounceAnimation: Set to `true` for bouncing animation of the popup.
     ///   - zIndex: Controls the display order of overlapping views.
     ///   - timeInterval: Time interval for the popup to be visible.
     public init(
@@ -231,6 +267,7 @@ public struct PopUpView: View {
         maxWidth: CGFloat = 240,
         popUpType: PopUpType = .top,
         popUpOffsetY: CGFloat = 6,
+        isBounceAnimation: Bool = false,
         zIndex: Double = .zero,
         timeInterval: Double? = nil,
         completion: (() -> Void)? = nil
@@ -250,6 +287,7 @@ public struct PopUpView: View {
         self.maxWidth = maxWidth
         self.popUpType = popUpType
         self.popUpOffsetY = popUpOffsetY
+        self.isBounceAnimation = isBounceAnimation
         self.zIndex = zIndex
         self.timeInterval = timeInterval
         self.completion = completion
@@ -306,10 +344,10 @@ public struct PopUpView: View {
             
             if isMenuTop() {
                 height = popUpYPosition + popUpSize.height +
-                padding * 2 - Self.popUpInsets.top
+                padding * 2 - Self.popUpInsets.top - getBounce()
             } else {
                 height = popUpYPosition - UIWindow.screenSize.height -
-                popUpSize.height - padding * 2 + Self.popUpInsets.bottom
+                popUpSize.height - padding * 2 + Self.popUpInsets.bottom + getBounce()
             }
         } else {
             height = popUpSize.height + padding * 2
@@ -345,31 +383,66 @@ public struct PopUpView: View {
     private func isEnoughSpaceToPopup() -> Bool {
         if isMenuTop() {
             let popUpMaxYPosition = anyViewGlobalCoordinate.y - anyViewSize.height * 0.5 -
-            popUpOffsetY - popUpStyle.arrowSize.height - Self.popUpInsets.top
+            popUpOffsetY - popUpStyle.arrowSize.height -
+            Self.popUpInsets.top - getBounce()
             
             return popUpMaxYPosition > safeAreaInsets.top
         }
         
         let popUpMinYPosition = anyViewGlobalCoordinate.y + anyViewSize.height * 0.5 +
-        popUpOffsetY + popUpStyle.arrowSize.height + Self.popUpInsets.bottom
+        popUpOffsetY + popUpStyle.arrowSize.height +
+        Self.popUpInsets.bottom + getBounce()
         
         return popUpMinYPosition < UIWindow.screenSize.height - safeAreaInsets.bottom
+    }
+    
+    private func getBounceOffset() -> CGFloat {
+        popUpType == .top ? -Self.bounce : Self.bounce
+    }
+    
+    private func getBounce() -> CGFloat {
+        isBounceAnimation ? Self.bounce : .zero
     }
     
     private func isMenuTop() -> Bool {
         popUpType == .top
     }
     
-    private func startOrStopTimer() {
+    private func startBounceTimer() {
+        stopBounceTimerIfNeeded()
+        
+        if !isBouncePopUp {
+            bounceTimer = Timer.scheduledTimer(
+                withTimeInterval: 8,
+                repeats: false
+            ) { _ in
+                isBouncePopUp.toggle()
+            }
+        }
+    }
+    
+    private func stopBounceTimerIfNeeded() {
+        guard isBounceAnimation else { return }
+        
+        if let runningTimer = bounceTimer {
+            runningTimer.invalidate()
+            bounceTimer = nil
+        }
+    }
+    
+    private func startOrStopPopUpTimer() {
         guard let timeInterval = timeInterval else { return }
         
-        if let runningTimer = timer {
+        if let runningTimer = popUpTimer {
             runningTimer.invalidate()
-            timer = nil
+            popUpTimer = nil
         }
         
         if isShowPopUp {
-            timer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: false) { _ in
+            popUpTimer = Timer.scheduledTimer(
+                withTimeInterval: timeInterval,
+                repeats: false
+            ) { _ in
                 isShowPopUp.toggle()
             }
         }
