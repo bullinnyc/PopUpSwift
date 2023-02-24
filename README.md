@@ -5,7 +5,7 @@
 Beautiful `PopUpView` that supports portrait and landscape orientation, with flexible view settings.
 
 ## Gifs
-![](./demo.gif)
+![](./demo.gif) ![](./demoBounceAnimation.gif)
 
 ## Screenshots
 ![](./demo.png)
@@ -13,14 +13,17 @@ Beautiful `PopUpView` that supports portrait and landscape orientation, with fle
 ## Installation
 ### [Swift Package Manager](https://swift.org/package-manager/)
 
-Going to Xcode `File` > `Add Packages...` and add the repository by giving the URL of this GitHub.
+Going to Xcode `File` > `Add Packages...` and add the repository by giving the URL `https://github.com/bullinnyc/PopUpSwift`  
+Enjoy!
 
 ## Usage
 
  ```swift
  import PopUpSwift
  ```
- 
+
+### Quick start with use ready-made shapes
+
  ```swift
 let singleLineExampleText = "Life is like a box of chocolates, you never know what you’re gonna get."
 
@@ -31,7 +34,53 @@ you never know what you’re gonna
 get.
 """
 
-// Create any view or use ready-made shapes.
+// PopUp with light style (default).
+PopUpView(
+    shape: .circle,
+    shapeColor: .mint,
+    text: singleLineExampleText
+) {
+    print("Do something on tapped on the popup.")
+}
+
+// PopUp with custom style.
+PopUpView(
+    shape: .heart,
+    shapeColor: .pink,
+    text: multiLineExampleText,
+    popUpType: .bottom
+)
+.popUpStyle(
+    .customPopUpStyle(
+        textColor: .white,
+        backgroundColor: .red
+    )
+)
+
+// PopUp with dark style.
+PopUpView(
+    shape: .circle,
+    shapeColor: .white,
+    text: singleLineExampleText
+) {
+    print("Do something on tapped on the popup.")
+}
+.popUpStyle(.darkPopUpStyle)
+ ```
+
+### Start with custom view
+
+ ```swift
+let singleLineExampleText = "Life is like a box of chocolates, you never know what you’re gonna get."
+
+let multiLineExampleText = """
+Life is like a box of
+chocolates,
+you never know what you’re gonna
+get.
+"""
+
+// Create any view.
 let image = Image("BrooklynBridge")
     .resizable()
     .aspectRatio(contentMode: .fill)
@@ -44,8 +93,7 @@ let image = Image("BrooklynBridge")
 
 // PopUp with light style (default).
 PopUpView(
-    shape: .circle,
-    shapeColor: .mint,
+    anyView: AnyView(image),
     text: singleLineExampleText
 ) {
     print("Do something on tapped on the popup.")
@@ -66,24 +114,23 @@ PopUpView(
 
 // PopUp with dark style.
 PopUpView(
-    shape: .circle,
-    shapeColor: .mint,
+    anyView: AnyView(image),
     text: singleLineExampleText
 ) {
     print("Do something on tapped on the popup.")
 }
 .popUpStyle(.darkPopUpStyle)
  ```
- 
+
 ### Sets the style of `PopUpView`
-Note: Default PopUp style is set to `light`. You can try other styles or create your own style.
+**Note:** Default PopUp style is set to `light`. You can try other styles or create your own style.
 
  ```swift
 .customPopUpStyle
 .darkPopUpStyle
 .newYorkPopUpStyle
  ```
- 
+
 ## Requirements
 - iOS 14.0 +
 - [SwiftUI](https://developer.apple.com/xcode/swiftui/)
