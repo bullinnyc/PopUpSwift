@@ -19,8 +19,10 @@ public struct PopUpView: View {
     @State private var popUpSize: CGSize = .zero
     @State private var isShowPopUp = false
     @State private var isBouncePopUp = false
+    @State private var isShowInfo = false
     @State private var popUpTimer: Timer?
     @State private var bounceTimer: Timer?
+    @State private var infoTimer: Timer?
     @State private var orientation: UIDeviceOrientation = .unknown
     
     // MARK: - Private Properties
@@ -36,6 +38,7 @@ public struct PopUpView: View {
     private let isBounceAnimation: Bool
     private let zIndex: Double
     private let timeInterval: Double?
+    private let infoText: String
     private let completion: (() -> Void)?
     
     static private let popUpInsets = EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
@@ -118,18 +121,31 @@ public struct PopUpView: View {
                                 .padding(padding)
                         }
                         .disabled(!isPopUpNotInScreenFrame())
-                        .gesture(
-                            DragGesture().onChanged { _ in
-                                if isPopUpNotInScreenFrame() {
-                                    startOrStopPopUpTimer()
-                                    
-                                    if isBounceAnimation {
-                                        isBouncePopUp = false
-                                        startBounceTimer()
-                                    }
+                        .onTapGesture {
+                            isShowPopUp.toggle()
+                            startOrStopPopUpTimer()
+                            stopBounceTimerIfNeeded()
+                            completion?()
+                        }
+                        .onLongPressGesture {
+                            let pasteboard = UIPasteboard.general
+                            pasteboard.string = text
+                            
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                            impactFeedback.impactOccurred()
+                            
+                            withAnimation { isShowInfo = true }
+                            startOrStopInfoTimer()
+                        } onPressingChanged: { inProgress in
+                            if !inProgress, isPopUpNotInScreenFrame() {
+                                startOrStopPopUpTimer()
+                                
+                                if isBounceAnimation {
+                                    isBouncePopUp = false
+                                    startBounceTimer()
                                 }
                             }
-                        )
+                        }
                     }
                     .transition(.popUpTransition())
                     .position(
@@ -144,36 +160,44 @@ public struct PopUpView: View {
                         : .easeInOut,
                         value: isBouncePopUp
                     )
-                    .onTapGesture {
-                        isShowPopUp.toggle()
-                        startOrStopPopUpTimer()
-                        stopBounceTimerIfNeeded()
-                        completion?()
-                    }
                 }
                 
-                anyView
-                    .disabled(true)
-                    .sizeOfView { size in
-                        anyViewSize = size
+                ZStack {
+                    if isShowInfo {
+                        Text(infoText)
+                            .foregroundColor(.white)
+                            .font(.custom("Seravek", size: 18))
+                            .padding(8)
+                            .background(Color.black)
+                            .cornerRadius(8)
+                            .fixedSize()
+                            .opacity(isShowInfo ? 0.8 : 0)
+                            .offset(x: getInfoOffsetX(), y: getInfoOffsetY())
                     }
-                    .fixedSize()
-                    .position(
-                        x: geometry.size.width * 0.5,
-                        y: geometry.size.height * 0.5
-                    )
-                    .coordinateOfView { coordinate in
-                        anyViewGlobalCoordinate = coordinate
-                    }
-                    .onTapGesture {
-                        if isEnoughSpaceToPopup() {
-                            isShowPopUp.toggle()
-                            startOrStopPopUpTimer()
-                            stopBounceTimerIfNeeded()
-                        } else {
-                            print("**** \(PopUpView.self) error: \(PopUpError.noSpace.rawValue) \(popUpType).")
+                    
+                    anyView
+                        .disabled(true)
+                        .sizeOfView { size in
+                            anyViewSize = size
                         }
-                    }
+                        .fixedSize()
+                        .position(
+                            x: geometry.size.width * 0.5,
+                            y: geometry.size.height * 0.5
+                        )
+                        .coordinateOfView { coordinate in
+                            anyViewGlobalCoordinate = coordinate
+                        }
+                        .onTapGesture {
+                            if isEnoughSpaceToPopup() {
+                                isShowPopUp.toggle()
+                                startOrStopPopUpTimer()
+                                stopBounceTimerIfNeeded()
+                            } else {
+                                print("**** \(PopUpView.self) error: \(PopUpError.noSpace.rawValue) \(popUpType).")
+                            }
+                        }
+                }
             }
             .frame(
                 width: popUpSize.width + padding * 2,
@@ -210,6 +234,7 @@ public struct PopUpView: View {
     ///   - isBounceAnimation: Set to `true` for bouncing animation of the popup.
     ///   - zIndex: Controls the display order of overlapping views.
     ///   - timeInterval: Time interval for the popup to be visible.
+    ///   - infoText: Text to be displayed for info view.
     public init(
         anyView: AnyView,
         text: String,
@@ -223,6 +248,7 @@ public struct PopUpView: View {
         isBounceAnimation: Bool = false,
         zIndex: Double = .zero,
         timeInterval: Double? = nil,
+        infoText: String = "Copied to clipboard",
         completion: (() -> Void)? = nil
     ) {
         self.anyView = anyView
@@ -237,6 +263,7 @@ public struct PopUpView: View {
         self.isBounceAnimation = isBounceAnimation
         self.zIndex = zIndex
         self.timeInterval = timeInterval
+        self.infoText = infoText
         self.completion = completion
     }
     
@@ -255,6 +282,7 @@ public struct PopUpView: View {
     ///   - isBounceAnimation: Set to `true` for bouncing animation of the popup.
     ///   - zIndex: Controls the display order of overlapping views.
     ///   - timeInterval: Time interval for the popup to be visible.
+    ///   - infoText: Text to be displayed for info view.
     public init(
         shape: ShapeType,
         shapeColor: Color,
@@ -270,6 +298,7 @@ public struct PopUpView: View {
         isBounceAnimation: Bool = false,
         zIndex: Double = .zero,
         timeInterval: Double? = nil,
+        infoText: String = "Copied to clipboard",
         completion: (() -> Void)? = nil
     ) {
         switch shape {
@@ -290,10 +319,21 @@ public struct PopUpView: View {
         self.isBounceAnimation = isBounceAnimation
         self.zIndex = zIndex
         self.timeInterval = timeInterval
+        self.infoText = infoText
         self.completion = completion
     }
     
     // MARK: - Private Methods
+    private func getInfoOffsetX() -> CGFloat {
+        let scaleScreenWidth = UIWindow.screenSize.width * 0.5
+        return scaleScreenWidth - anyViewGlobalCoordinate.x
+    }
+    
+    private func getInfoOffsetY() -> CGFloat {
+        let scaleScreenHeight = UIWindow.screenSize.height * 0.9
+        return scaleScreenHeight - anyViewGlobalCoordinate.y
+    }
+    
     private func getTriangleCoordinateX(_ geometry: GeometryProxy) -> CGFloat {
         if geometry.frame(in: .global).maxX > UIWindow.screenSize.width {
             return geometry.size.width * 0.5 -
@@ -445,6 +485,20 @@ public struct PopUpView: View {
             ) { _ in
                 isShowPopUp.toggle()
             }
+        }
+    }
+    
+    private func startOrStopInfoTimer() {
+        if let runningTimer = infoTimer {
+            runningTimer.invalidate()
+            infoTimer = nil
+        }
+        
+        infoTimer = Timer.scheduledTimer(
+            withTimeInterval: 3,
+            repeats: false
+        ) { _ in
+            isShowInfo.toggle()
         }
     }
 }
