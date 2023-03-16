@@ -85,9 +85,9 @@ let image = Image("BrooklynBridge")
     .resizable()
     .aspectRatio(contentMode: .fill)
     .clipShape(Circle())
-        .overlay(
-            Circle()
-                .stroke(.white, lineWidth: 0.9)
+    .overlay(
+        Circle()
+            .stroke(.white.opacity(0.8), lineWidth: 0.9)
     )
     .frame(width: 60, height: 60)
 
