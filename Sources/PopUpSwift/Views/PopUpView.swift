@@ -30,7 +30,7 @@ public struct PopUpView: View {
     private let text: String
     private let textAlignment: TextAlignment
     private let fontName: String
-    private var fontSize: CGFloat
+    private let fontSize: CGFloat
     private let padding: CGFloat
     private let maxWidth: CGFloat
     private let popUpType: PopUpType

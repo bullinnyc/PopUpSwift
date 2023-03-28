@@ -7,9 +7,23 @@
 //
 
 #if canImport(UIKit)
+
 import UIKit
 
-// Images
+// Colors.
+public let theia = UIColor(
+    named: "theia",
+    in: Bundle.module,
+    compatibleWith: nil
+) ?? UIColor()
+
+public let mint = UIColor(
+    named: "mint",
+    in: Bundle.module,
+    compatibleWith: nil
+) ?? UIColor()
+
+// Images.
 public let brooklynBridge = UIImage(named: "BrooklynBridge", in: Bundle.module, compatibleWith: nil)
 
 #endif
