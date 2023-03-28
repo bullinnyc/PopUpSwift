@@ -1,6 +1,6 @@
 # PopUpSwift
 
- [![Swift Package Manager compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
+[![Swift Package Manager compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 
 Beautiful `PopUpView` that supports portrait and landscape orientation, with flexible view settings.
 
@@ -18,13 +18,13 @@ Enjoy!
 
 ## Usage
 
- ```swift
- import PopUpSwift
- ```
+```swift
+import PopUpSwift
+```
 
 ### Quick start with use ready-made shapes
 
- ```swift
+```swift
 let singleLineExampleText = "Life is like a box of chocolates, you never know what you’re gonna get."
 
 let multiLineExampleText = """
@@ -66,11 +66,11 @@ PopUpView(
     print("Do something on tapped on the popup.")
 }
 .popUpStyle(.darkPopUpStyle)
- ```
+```
 
 ### Start with custom view
 
- ```swift
+```swift
 let singleLineExampleText = "Life is like a box of chocolates, you never know what you’re gonna get."
 
 let multiLineExampleText = """
@@ -120,16 +120,16 @@ PopUpView(
     print("Do something on tapped on the popup.")
 }
 .popUpStyle(.darkPopUpStyle)
- ```
+```
 
 ### Sets the style of `PopUpView`
 **Note:** Default PopUp style is set to `light`. You can try other styles or create your own style.
 
- ```swift
-.customPopUpStyle
+```swift
 .darkPopUpStyle
 .newYorkPopUpStyle
- ```
+.customPopUpStyle
+```
 
 ## Requirements
 - iOS 14.0 +
