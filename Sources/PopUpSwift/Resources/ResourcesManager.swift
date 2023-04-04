@@ -24,6 +24,10 @@ public let mint = UIColor(
 ) ?? UIColor()
 
 // Images.
-public let brooklynBridge = UIImage(named: "BrooklynBridge", in: Bundle.module, compatibleWith: nil)
+public let brooklynBridge = UIImage(
+    named: "BrooklynBridge",
+    in: Bundle.module,
+    compatibleWith: nil
+) ?? UIImage()
 
 #endif

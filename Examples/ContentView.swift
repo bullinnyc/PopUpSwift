@@ -24,7 +24,7 @@ struct ContentView: View {
     
     // MARK: - body Property
     var body: some View {
-        let image = Image(uiImage: brooklynBridge ?? UIImage())
+        let image = Image(uiImage: brooklynBridge)
             .resizable()
             .aspectRatio(contentMode: .fill)
             .clipShape(Circle())
