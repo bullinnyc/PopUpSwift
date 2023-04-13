@@ -122,6 +122,8 @@ public struct PopUpView: View {
                         }
                         .disabled(!isPopUpNotInScreenFrame())
                         .onTapGesture {
+                            guard isShowPopUp else { return }
+                            
                             isShowPopUp.toggle()
                             startOrStopPopUpTimer()
                             stopBounceTimerIfNeeded()
