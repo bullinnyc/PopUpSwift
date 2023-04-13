@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct DeviceRotationViewModifier: ViewModifier {
+private struct DeviceRotationViewModifier: ViewModifier {
     // MARK: - Public Properties
     let action: (UIDeviceOrientation) -> Void
     

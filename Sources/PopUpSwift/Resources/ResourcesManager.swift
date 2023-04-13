@@ -7,7 +7,6 @@
 //
 
 #if canImport(UIKit)
-
 import UIKit
 
 // Colors.
@@ -29,5 +28,4 @@ public let brooklynBridge = UIImage(
     in: Bundle.module,
     compatibleWith: nil
 ) ?? UIImage()
-
 #endif

@@ -7,7 +7,6 @@
 //
 
 #if os(iOS)
-
 import SwiftUI
 import PopUpSwift
 
@@ -112,5 +111,4 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-
 #endif
