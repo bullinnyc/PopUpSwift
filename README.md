@@ -93,7 +93,7 @@ let image = Image("BrooklynBridge")
 
 // PopUp with light style (default).
 PopUpView(
-    anyView: AnyView(image),
+    anyView: image,
     text: singleLineExampleText
 ) {
     print("Do something on tapped on the popup.")
@@ -101,7 +101,7 @@ PopUpView(
 
 // PopUp with custom style.
 PopUpView(
-    anyView: AnyView(image),
+    anyView: image,
     text: multiLineExampleText,
     popUpType: .bottom
 )
@@ -114,7 +114,7 @@ PopUpView(
 
 // PopUp with dark style.
 PopUpView(
-    anyView: AnyView(image),
+    anyView: image,
     text: singleLineExampleText
 ) {
     print("Do something on tapped on the popup.")

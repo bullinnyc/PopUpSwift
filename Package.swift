@@ -16,8 +16,8 @@ let package = Package(
             targets: ["PopUpSwift"]
         ),
         .library(
-            name: "ContentView",
-            targets: ["ContentView"]
+            name: "ExamplePopUpSwift",
+            targets: ["Examples"]
         )
     ],
     dependencies: [
@@ -32,13 +32,13 @@ let package = Package(
             dependencies: []
         ),
         .target(
-            name: "ContentView",
+            name: "Examples",
             dependencies: ["PopUpSwift"],
             path: "Examples"
         ),
         .testTarget(
             name: "PopUpSwiftTests",
             dependencies: ["PopUpSwift"]
-        ),
+        )
     ]
 )

@@ -61,7 +61,7 @@ struct ContentView: View {
                     
                     // PopUp with specific style.
                     PopUpView(
-                        anyView: AnyView(image),
+                        anyView: image,
                         text: singleLineExampleText,
                         isBounceAnimation: true
                     )

@@ -313,12 +313,21 @@ extension EnvironmentValues {
 extension View {
     /// Sets the style of this view.
     ///
-    /// Set to `.darkPopUpStyle` or `.customPopUpStyle(textColor:backgroundColor:)` or any other style to apply the style.
+    /// Set to `.darkPopUpStyle`
+    /// or `.customPopUpStyle(textColor:backgroundColor:)`
+    /// or any other style to apply the style.
     ///
-    ///     PopUpView(text: "Hello, world!")
+    ///     let exampleView = Text("Example")
+    ///         .foregroundColor(.white)
+    ///         .font(.custom("Seravek", size: 18))
+    ///         .padding(8)
+    ///         .background(.pink)
+    ///         .cornerRadius(8)
+    ///
+    ///     PopUpView(anyView: exampleView, text: "Hello, world!")
     ///         .popUpStyle(.darkPopUpStyle)
     ///
-    /// - Parameter style: The popup color style.
+    /// - Parameter style: The popup style.
     ///
     /// - Returns: A view that sets the style of this view.
     public func popUpStyle<S: PopUpStyleProtocol>(_ style: S) -> some View {
